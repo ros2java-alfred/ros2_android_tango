@@ -5,5 +5,10 @@ package org.ros2.android.tango;
  */
 
 
-public class TangoNode extends AndroidNode {
-}
+
+//public class TangoNode extends NodeAndroid {
+//
+//    public TangoNode(Context context) {
+//        super(context);
+//    }
+//}
