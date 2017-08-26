@@ -1,3 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="exception_out_of_date">Tango core out </string>
+    <string name="exception_tango_error">Tango error</string>
+    <string name="exception_tango_invalid">Tango invalide</string>
+    <string name="average_z">AverageZ</string>
+    <string name="na">N.A.</string>
+    <string name="point_count">point count</string>
+    <string name="first_person">First person</string>
+    <string name="top_down">top down</string>
+    <string name="third_person">third person</string>
 </resources>

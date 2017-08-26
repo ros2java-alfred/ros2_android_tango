@@ -1,6 +1,5 @@
 buildscript {
     repositories {
-    mavenLocal()
         maven {
             url 'https://maven.google.com'
         }
@@ -11,17 +10,17 @@ buildscript {
             url "https://plugins.gradle.org/m2/"
         }
         jcenter()
-        mavenLocal()
+//        mavenLocal()
     }
 
     dependencies {
         classpath 'com.android.tools.build:gradle:2.3.0'
-        classpath "gradle.plugin.org.ros2.rcljava:rclJavaPlugin:0.4.10"
-//        classpath "org.ros2.rcljava:rclJavaPlugin:0.4.10"
+        classpath "gradle.plugin.org.ros2.rcljava:rclJavaPlugin:0.5.0"
+//        classpath "org.ros2.rcljava:rclJavaPlugin:0.5.0"
     }
 }
 
-apply plugin: 'com.android.library'
+apply plugin: 'com.android.application'
 apply plugin: 'org.ros2.rcljava'
 
 repositories {
@@ -32,11 +31,10 @@ android {
     compileSdkVersion 25
     buildToolsVersion '26.0.1'
     defaultConfig {
-        minSdkVersion 9
+        minSdkVersion 19
         targetSdkVersion 25
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
-
     lintOptions {
         abortOnError false
     }
@@ -50,6 +48,19 @@ android {
     }
 }
 
-dependencies {
+allprojects {
+    ext {
+        tango_version = '1.55'
+        //rajawali_version = '1.1.777'
+        rajawali_version = '1.0.325@aar'
+    }
+}
 
+dependencies {
+    compile "com.google.tango:sdk-base:${tango_version}"
+    compile "com.google.tango:sdk-support:${tango_version}"
+    compile "com.google.tango:sdk-ux:${tango_version}"
+    compile "org.rajawali3d:rajawali:${rajawali_version}"
+//    compile 'com.android.support:appcompat-v7:25.4.0'
+    compile 'com.android.support.constraint:constraint-layout:1.0.2'
 }
