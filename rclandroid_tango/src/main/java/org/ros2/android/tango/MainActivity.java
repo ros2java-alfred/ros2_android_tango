@@ -23,6 +23,7 @@ import android.widget.TextView;
 
 //import org.rajawali3d.view.SurfaceView; // 1.1
 import org.rajawali3d.surface.RajawaliSurfaceView; // 1.0
+import org.ros2.android.core.BaseRosService;
 import org.ros2.android.tango.ux.rajawali.TangoPointCloudRajawaliRenderer;
 import org.ros2.android.tango.ux.TangoPointCloudRenderer;
 
@@ -30,6 +31,7 @@ public class MainActivity extends Activity {
     private static final String TAG = "MainActivity";
 
     private TangoNode node;
+    private BaseRosService executor;
     private TangoPointCloudRenderer renderer;
 
 //    private GLSurfaceView surfaceView;       // For native OpenGL engine
@@ -45,17 +47,12 @@ public class MainActivity extends Activity {
         this.pointCountTextView = (TextView) this.findViewById(R.id.point_count_textview);
         this.averageZTextView   = (TextView) this.findViewById(R.id.average_z_textview);
         this.surfaceView        = (RajawaliSurfaceView) this.findViewById(R.id.gl_surface_view);
-
-//        this.renderer = new TangoPointCloudOpenGLRenderer(this, this.surfaceView);
-        this.renderer = new TangoPointCloudRajawaliRenderer(this, this.surfaceView);
-        this.node     = new TangoNode(this, this.renderer);
-        this.renderer.setupRenderer();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        this.node.onResume(this);
+
     }
 
     @Override
@@ -65,7 +62,17 @@ public class MainActivity extends Activity {
     }
 
     public void onFirstPersonClicked(View view) {
-        this.renderer.setFirstPersonView();
+
+       // this.renderer.setFirstPersonView();
+        TangoApplication app = (TangoApplication) getApplication();
+        this.executor = app.getRosService();
+
+//        this.renderer = new TangoPointCloudOpenGLRenderer(this, this.surfaceView);
+        this.renderer = new TangoPointCloudRajawaliRenderer(this, this.surfaceView);
+        this.node     = new TangoNode(this, "tango", this.renderer);
+        this.renderer.setupRenderer();
+        this.executor.addNode(this.node);
+        this.node.onResume(this);
     }
 
     public void onTopDownClicked(View view) {

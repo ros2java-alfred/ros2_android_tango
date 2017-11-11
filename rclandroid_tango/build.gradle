@@ -1,22 +1,22 @@
 buildscript {
     repositories {
-        maven {
-            url 'https://maven.google.com'
-        }
-        maven {
-            url 'https://dl.google.com/dl/android/maven2/'
-        }
+        jcenter()
+        mavenCentral()
+        google()
         maven {
             url "https://plugins.gradle.org/m2/"
+            name 'Gradle'
         }
-        jcenter()
 //        mavenLocal()
     }
 
+    apply from: 'https://gist.githubusercontent.com/Theosakamg/e67a28a61e6775e3129a5746f6d57aee/raw/ros2_java_version.gradle'
+//    apply from: '../modules.gradle'
+
     dependencies {
-        classpath 'com.android.tools.build:gradle:2.3.0'
-        classpath "gradle.plugin.org.ros2.rcljava:rclJavaPlugin:0.5.0"
-//        classpath "org.ros2.rcljava:rclJavaPlugin:0.5.0"
+        classpath lib.android.build
+        classpath lib.rcljava
+//        classpath "org.ros2.rcljava:rclJavaPlugin:${rootProject.config.gradle.rcljava}"
     }
 }
 
@@ -25,15 +25,20 @@ apply plugin: 'org.ros2.rcljava'
 
 repositories {
     jcenter()
+    mavenCentral()
+    google()
 }
 
 android {
-    compileSdkVersion 25
-    buildToolsVersion '26.0.1'
+    compileSdkVersion rootProject.config.version.android.compileSdk
+    buildToolsVersion rootProject.config.version.android.buildTool
     defaultConfig {
-        minSdkVersion 19
-        targetSdkVersion 25
+        minSdkVersion 19 //rootProject.config.version.android.minSdk
+        targetSdkVersion rootProject.config.version.android.targetSdk
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        ndk{
+            abiFilters "armeabi", "armeabi-v7a"
+        }
     }
     lintOptions {
         abortOnError false
@@ -50,17 +55,17 @@ android {
 
 allprojects {
     ext {
-        tango_version = '1.55'
-        //rajawali_version = '1.1.777'
+        //rajawali_version = '1.1.970'
         rajawali_version = '1.0.325@aar'
     }
 }
 
 dependencies {
-    compile "com.google.tango:sdk-base:${tango_version}"
-    compile "com.google.tango:sdk-support:${tango_version}"
-    compile "com.google.tango:sdk-ux:${tango_version}"
+    compile lib.android.tango.sdkBase
+    compile lib.android.tango.sdkSupport
+    compile lib.android.tango.sdkUx
+
     compile "org.rajawali3d:rajawali:${rajawali_version}"
-//    compile 'com.android.support:appcompat-v7:25.4.0'
-    compile 'com.android.support.constraint:constraint-layout:1.0.2'
+
+    compile lib.android.support.constraint
 }

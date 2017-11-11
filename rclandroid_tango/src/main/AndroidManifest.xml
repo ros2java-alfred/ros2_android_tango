@@ -9,10 +9,11 @@
     <uses-feature android:glEsVersion="0x00020000"></uses-feature>
     <uses-sdk android:targetSdkVersion="8" android:minSdkVersion="8"></uses-sdk>
 
-    <application android:hardwareAccelerated="true">
+    <application android:hardwareAccelerated="true" android:name=".TangoApplication">
         <uses-library
             android:name="com.projecttango.libtango_device2"
             android:required="true" />
+        <service android:name="org.ros2.android.core.BaseRosService" />
 
         <activity android:name=".MainActivity">
             <intent-filter>

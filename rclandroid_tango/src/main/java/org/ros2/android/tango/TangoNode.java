@@ -33,12 +33,23 @@ import com.google.tango.ux.TangoUx;
 import com.google.tango.ux.UxExceptionEvent;
 import com.google.tango.ux.UxExceptionEventListener;
 
+import org.ros2.android.core.node.AndroidNativeNode;
 import org.ros2.android.tango.ux.TangoPointCloudRenderer;
+import org.ros2.rcljava.node.topic.Publisher;
+import org.ros2.rcljava.qos.QoSProfile;
+import org.ros2.rcljava.time.WallTimer;
+import org.ros2.rcljava.time.WallTimerCallback;
 
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.concurrent.TimeUnit;
 
-public class TangoNode  {
+import geometry_msgs.msg.Point32;
+import sensor_msgs.msg.Imu;
+import sensor_msgs.msg.PointCloud;
+
+public class TangoNode extends AndroidNativeNode implements WallTimerCallback {
     private static final String TAG = "TangoNode";
 
     private static final String UX_EXCEPTION_EVENT_DETECTED = "Exception Detected: ";
@@ -57,17 +68,40 @@ public class TangoNode  {
     private double mPointCloudTimeToNextUpdate = UPDATE_INTERVAL_MS;
     private double mPointCloudPreviousTimeStamp;
 
-    public TangoNode (Context context, TangoPointCloudRenderer renderer) {
-        //super(context);
+    private WallTimer timer;
+    private Publisher<PointCloud> imuPublisher;
+
+    public TangoNode (Context context, String name, TangoPointCloudRenderer renderer) {
+        super(name, context);
         if (renderer != null) {
             this.renderer = renderer;
             this.tangoUx = this.setupTangoUxAndLayout(context);
             this.pointCloudManager = this.renderer.getPointCloudManager();
         }
+
+        this.imuPublisher = this.createPublisher(PointCloud.class, "/cloud", QoSProfile.SENSOR_DATA);
+        this.timer = this.createWallTimer(500, TimeUnit.MILLISECONDS, this);
     }
 
-    public TangoNode (Context context) {
-        this(context, null);
+    private void publishImu() {
+        PointCloud pc = new PointCloud();
+        Collection<Point32> points = new ArrayList<>();
+
+        TangoPointCloudData pointsBuffer = this.pointCloudManager.getLatestPointCloud();
+        for (int i = 0; i < pointsBuffer.points.capacity() - 3; i = i + 3) {
+            Point32 point = new Point32();
+            point.setX(pointsBuffer.points.get(i));
+            point.setY(pointsBuffer.points.get(i+1));
+            point.setZ(pointsBuffer.points.get(i+2));
+            points.add(point);
+        }
+        pc.setPoints(points);
+
+        this.imuPublisher.publish(pc);
+    }
+
+    public TangoNode (Context context, String name) {
+        this(context, name,null);
     }
 
     public void onResume(final Activity activity) {
@@ -260,4 +294,9 @@ public class TangoNode  {
             }
         }
     };
+
+    @Override
+    public void tick() {
+        this.publishImu();
+    }
 }
