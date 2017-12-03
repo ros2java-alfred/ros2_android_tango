@@ -27,6 +27,7 @@ import com.google.atap.tangoservice.TangoInvalidException;
 import com.google.atap.tangoservice.TangoOutOfDateException;
 import com.google.atap.tangoservice.TangoPointCloudData;
 import com.google.atap.tangoservice.TangoPoseData;
+
 import com.google.tango.support.TangoPointCloudManager;
 import com.google.tango.support.TangoSupport;
 import com.google.tango.ux.TangoUx;
