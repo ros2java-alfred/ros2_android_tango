@@ -14,7 +14,6 @@
  */
 package org.ros2.android.tango;
 
-import android.app.Activity;
 import android.os.Bundle;
 import android.view.Display;
 import android.view.MotionEvent;
@@ -23,19 +22,15 @@ import android.widget.TextView;
 
 //import org.rajawali3d.view.SurfaceView; // 1.1
 import org.rajawali3d.surface.RajawaliSurfaceView; // 1.0
-import org.ros2.android.core.BaseRosService;
+import org.ros2.android.core.BaseRosActivity;
 import org.ros2.android.tango.ux.rajawali.TangoPointCloudRajawaliRenderer;
 import org.ros2.android.tango.ux.TangoPointCloudRenderer;
 
-public class MainActivity extends Activity {
-    private static final String TAG = "MainActivity";
+public class MainActivity extends BaseRosActivity {
 
     private TangoNode node;
-    private BaseRosService executor;
     private TangoPointCloudRenderer renderer;
 
-//    private GLSurfaceView surfaceView;       // For native OpenGL engine
-    private RajawaliSurfaceView surfaceView;    // For Rajawali engine
     private TextView pointCountTextView;
     private TextView averageZTextView;
 
@@ -44,35 +39,32 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         this.setContentView(R.layout.activity_main);
 
-        this.pointCountTextView = (TextView) this.findViewById(R.id.point_count_textview);
-        this.averageZTextView   = (TextView) this.findViewById(R.id.average_z_textview);
-        this.surfaceView        = (RajawaliSurfaceView) this.findViewById(R.id.gl_surface_view);
+        this.pointCountTextView = this.findViewById(R.id.point_count_textview);
+        this.averageZTextView   = this.findViewById(R.id.average_z_textview);
+
+        // GLSurfaceView surfaceView;       // For native OpenGL engine
+        RajawaliSurfaceView surfaceView = this.findViewById(R.id.gl_surface_view); // For Rajawali engine
+
+        //this.renderer = new TangoPointCloudOpenGLRenderer(this, this.surfaceView);
+        this.renderer = new TangoPointCloudRajawaliRenderer(this, surfaceView);
+        this.renderer.setupRenderer();
+
+        this.node = new TangoNode(this, "tango", this.renderer);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-
+        this.node.onResume(this);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        this.node.onPause(this);
     }
 
     public void onFirstPersonClicked(View view) {
-
-       // this.renderer.setFirstPersonView();
-        TangoApplication app = (TangoApplication) getApplication();
-        this.executor = app.getRosService();
-
-//        this.renderer = new TangoPointCloudOpenGLRenderer(this, this.surfaceView);
-        this.renderer = new TangoPointCloudRajawaliRenderer(this, this.surfaceView);
-        this.node     = new TangoNode(this, "tango", this.renderer);
-        this.renderer.setupRenderer();
-        this.executor.addNode(this.node);
-        this.node.onResume(this);
+        this.renderer.setFirstPersonView();
     }
 
     public void onTopDownClicked(View view) {

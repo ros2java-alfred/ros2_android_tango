@@ -33,6 +33,8 @@ import com.google.tango.ux.TangoUx;
 import com.google.tango.ux.UxExceptionEvent;
 import com.google.tango.ux.UxExceptionEventListener;
 
+import org.ros2.android.core.RosConfig;
+import org.ros2.android.core.RosManager;
 import org.ros2.android.core.node.AndroidNativeNode;
 import org.ros2.android.tango.ux.TangoPointCloudRenderer;
 import org.ros2.rcljava.node.topic.Publisher;
@@ -59,7 +61,7 @@ public class TangoNode extends AndroidNativeNode implements WallTimerCallback {
     private static final double UPDATE_INTERVAL_MS = 100.0;
 
     private Tango tango;
-    private TangoConfig config;
+    private TangoConfig tangoConfig;
     private TangoUx tangoUx = null;
 
     private TangoPointCloudRenderer renderer;
@@ -68,8 +70,15 @@ public class TangoNode extends AndroidNativeNode implements WallTimerCallback {
     private double mPointCloudTimeToNextUpdate = UPDATE_INTERVAL_MS;
     private double mPointCloudPreviousTimeStamp;
 
+    private RosConfig rosConfig;
+    private RosManager rosManager;
     private WallTimer timer;
-    private Publisher<PointCloud> imuPublisher;
+    private Publisher<PointCloud> pcPublisher;
+    private Publisher<Imu> imuPublisher;
+
+    public TangoNode (Context context, String name) {
+        this(context, name,null);
+    }
 
     public TangoNode (Context context, String name, TangoPointCloudRenderer renderer) {
         super(name, context);
@@ -79,11 +88,13 @@ public class TangoNode extends AndroidNativeNode implements WallTimerCallback {
             this.pointCloudManager = this.renderer.getPointCloudManager();
         }
 
-        this.imuPublisher = this.createPublisher(PointCloud.class, "/cloud", QoSProfile.SENSOR_DATA);
+        this.pcPublisher = this.createPublisher(PointCloud.class, "/cloud", QoSProfile.SENSOR_DATA);
+        this.imuPublisher = this.createPublisher(Imu.class, "/imu", QoSProfile.SENSOR_DATA);
+
         this.timer = this.createWallTimer(500, TimeUnit.MILLISECONDS, this);
     }
 
-    private void publishImu() {
+    private void publishPointCloud() {
         PointCloud pc = new PointCloud();
         Collection<Point32> points = new ArrayList<>();
 
@@ -97,11 +108,16 @@ public class TangoNode extends AndroidNativeNode implements WallTimerCallback {
         }
         pc.setPoints(points);
 
-        this.imuPublisher.publish(pc);
+        this.pcPublisher.publish(pc);
     }
 
-    public TangoNode (Context context, String name) {
-        this(context, name,null);
+    private void publishImu() {
+        Imu imu = new Imu();
+
+        // TODO
+
+        this.imuPublisher.publish(imu);
+
     }
 
     public void onResume(final Activity activity) {
@@ -119,18 +135,35 @@ public class TangoNode extends AndroidNativeNode implements WallTimerCallback {
             public void run() {
                 synchronized (activity) {
                     try {
-                        config = setupTangoConfig(tango);
-                        tango.connect(config);
+                        tangoConfig = setupTangoConfig(tango);
+                        tango.connect(tangoConfig);
                         startupTango(activity);
                         TangoSupport.initialize(tango);
-                        renderer.setConnected(true);
+                        if (renderer != null) {
+                            renderer.setConnected(true);
 //                        renderer.setDisplayRotation();
+                        }
                     } catch (TangoOutOfDateException e) {
                         Log.e(TAG, activity.getString(R.string.exception_out_of_date), e);
                     } catch (TangoErrorException e) {
                         Log.e(TAG, activity.getString(R.string.exception_tango_error), e);
                     } catch (TangoInvalidException e) {
                         Log.e(TAG, activity.getString(R.string.exception_tango_invalid), e);
+                    }
+                }
+            }
+        });
+
+        this.rosManager = new RosManager(activity, new Runnable() {
+            @Override
+            public void run() {
+                synchronized (activity) {
+                    try {
+                        rosConfig = setupRosConfig(rosManager);
+                        rosManager.connect(rosConfig);
+                        startupRos(activity);
+                    } catch (Exception e) {
+                        Log.e(TAG, activity.getString(R.string.exception_ros_error), e);
                     }
                 }
             }
@@ -144,11 +177,17 @@ public class TangoNode extends AndroidNativeNode implements WallTimerCallback {
                 // service leak exception.
                 this.tangoUx.stop();
                 this.tango.disconnect();
-                this.renderer.setConnected(false);
+                if (renderer != null) {
+                    this.renderer.setConnected(false);
+                }
             } catch (TangoErrorException e) {
                 Log.e(TAG, activity.getString(R.string.exception_tango_error), e);
             }
         }
+    }
+
+    private void startupRos(final Activity activity) {
+        this.rosManager.addNode(this);
     }
 
     /**
@@ -225,6 +264,12 @@ public class TangoNode extends AndroidNativeNode implements WallTimerCallback {
         return config;
     }
 
+    private RosConfig setupRosConfig(RosManager rosManager) {
+        RosConfig config = rosManager.getConfig(TangoConfig.CONFIG_TYPE_DEFAULT);
+
+        return config;
+    }
+
     /**
      * Sets up TangoUX and sets its listener.
      */
@@ -297,6 +342,15 @@ public class TangoNode extends AndroidNativeNode implements WallTimerCallback {
 
     @Override
     public void tick() {
-        this.publishImu();
+        //this.publishImu();
+        this.publishPointCloud();
+    }
+
+    @Override
+    public void dispose() {
+        this.timer.dispose();
+        this.pcPublisher.dispose();
+        this.imuPublisher.dispose();
+        super.dispose();
     }
 }

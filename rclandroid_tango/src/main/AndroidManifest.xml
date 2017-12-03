@@ -13,8 +13,6 @@
         <uses-library
             android:name="com.projecttango.libtango_device2"
             android:required="true" />
-        <service android:name="org.ros2.android.core.BaseRosService" />
-
         <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

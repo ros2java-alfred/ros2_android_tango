@@ -49,6 +49,8 @@ android {
     }
     buildTypes {
         debug {
+            debuggable true
+            jniDebuggable true
         }
     }
 }
@@ -64,8 +66,6 @@ dependencies {
     compile lib.android.tango.sdkBase
     compile lib.android.tango.sdkSupport
     compile lib.android.tango.sdkUx
-
     compile "org.rajawali3d:rajawali:${rajawali_version}"
-
     compile lib.android.support.constraint
 }

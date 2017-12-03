@@ -9,4 +9,5 @@
     <string name="first_person">First person</string>
     <string name="top_down">top down</string>
     <string name="third_person">third person</string>
+    <string name="exception_ros_error">Ros Manager not log</string>
 </resources>

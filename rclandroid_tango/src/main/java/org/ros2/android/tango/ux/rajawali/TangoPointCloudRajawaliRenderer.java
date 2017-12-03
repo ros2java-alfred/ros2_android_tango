@@ -129,7 +129,7 @@ public class TangoPointCloudRajawaliRenderer extends RajawaliRenderer implements
      * at the time the cloud data was acquired.
      * NOTE: This needs to be called from the OpenGL rendering thread.
      */
-    public void updatePointCloud(TangoPointCloudData pointCloudData, float[] openGlTdepth) {
+    private void updatePointCloud(TangoPointCloudData pointCloudData, float[] openGlTdepth) {
         mPointCloud.updateCloud(pointCloudData.numPoints, pointCloudData.points);
         Matrix4 openGlTdepthMatrix = new Matrix4(openGlTdepth);
         mPointCloud.setPosition(openGlTdepthMatrix.getTranslation());
@@ -141,7 +141,7 @@ public class TangoPointCloudRajawaliRenderer extends RajawaliRenderer implements
      * Updates our information about the current device pose.
      * NOTE: This needs to be called from the OpenGL rendering thread.
      */
-    public void updateCameraPose(TangoPoseData cameraPose) {
+    private void updateCameraPose(TangoPoseData cameraPose) {
         float[] rotation = cameraPose.getRotationAsFloats();
         float[] translation = cameraPose.getTranslationAsFloats();
         Quaternion quaternion = new Quaternion(rotation[3], rotation[0], rotation[1], rotation[2]);
@@ -174,7 +174,7 @@ public class TangoPointCloudRajawaliRenderer extends RajawaliRenderer implements
         this.mTouchViewHandler.setThirdPersonView();
     }
 
-    public void updateCamera(final int displayRotation) {
+    private void updateCamera(final int displayRotation) {
         // Update current camera pose.
         try {
             // Calculate the device pose. This transform is used to display
@@ -195,7 +195,7 @@ public class TangoPointCloudRajawaliRenderer extends RajawaliRenderer implements
         }
     }
 
-    public void updatePointCloud() {
+    private void updatePointCloud() {
         // Update point cloud data.
         TangoPointCloudData pointCloud = this.tangoPointCloudManager.getLatestPointCloud();
 
